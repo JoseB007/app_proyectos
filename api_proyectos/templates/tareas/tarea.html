@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            timeZone: 'local',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title'
+            },
+            events: [
+                {
+                    title: "{{tarea.nombre}}",
+                    start: '{{tarea.fecha_ini | date:"Y-m-d"}}',
+                    end: '{{tarea.fecha_fin | date:"Y-m-d"}}'
+                }
+            ]
+        });
+        calendar.render();
+    });
+</script>
+
+<body>
+    <div class="container">
+        {% if error_message %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>¡Error!</strong> {{error_message}}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% elif error_fecha %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>¡Error!</strong> {{error_fecha}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-sm-5 p-0">
+                <div class="card">
+                    <div class="card-header">
+                        Tarea
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title">{{tarea.nombre}}</h2>
+                        <a href="{% url 'proyecto' proyecto.nombre %}">{{proyecto.nombre}}</a>
+                        <div class="mt-4 mb-3 d-grid gap-2 justify-content-md-end">
+                            <span class="badge text-bg-success">{{tarea.fecha_ini}}</span>
+                            <span class="badge text-bg-danger">{{tarea.fecha_fin}}</span>
+                        </div>
+                        <div class="mt-3 gap-2 d-md-flex">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#edit_task">
+                                Editar Tarea
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="card-subtitle mb-2 text-body-secondary">Estado</h6>
+                            </div>
+                            <div class="col text-end">
+                                <h6 class="card-subtitle mb-2 text-body-secondary">
+                                    {% if tarea.estado == False %}
+                                    <span class="badge text-bg-warning">
+                                        Pendiente
+                                    </span>
+                                    {% else %}
+                                    <span class="badge text-bg-success">
+                                        Finalizada
+                                    </span>
+                                    {% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-7">
+                <div id='calendar' class="container mt-3"></div>
+            </div>
+        </div>
+        <div class="modal fade" id="edit_task" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Tarea</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'edit_task' %}" method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="hidden" name="id_tarea" value="{{tarea.id}}">
+                                <label for="" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="nombre_tarea" value="{{tarea.nombre}}">
+                                <div class="row">
+                                    <div class="col">
+                                        <label for="" class="form-label">Fecha de Inicio</label>
+                                        <input type="date" class="form-control" name="date_ini" value="{{tarea.fecha_ini|date:'Y-m-d'}}">
+                                    </div>
+                                    <div class="col">
+                                        <label for="" class="form-label">Fecha de Finalización</label>
+                                        <input type="date" class="form-control" name="date_fin" value="{{tarea.fecha_fin|date:'Y-m-d'}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

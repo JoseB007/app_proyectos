@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+    <div class="container">
+        {% if error_message %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>¡Error!</strong> {{error_message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% elif error_fecha %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>¡Error!</strong> {{error_fecha}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-sm-5 p-0">
+                <div class="card">
+                    <div class="card-header">
+                        Proyecto
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title">{{proyecto.nombre}}</h2>
+                        <button type="button" class="btn btn-success" id="btn_actualizarEstado">Finalizar</button>
+                        <h6 class="card-subtitle mb-2 mt-4 text-body-secondary">Descripción</h6>
+                        <p class="cart-text">{{proyecto.descripcion}}</p>
+                        <div class="">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                Agregar una Tarea
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#edit_proyect">
+                                Editar el Proyecto
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="card-subtitle mb-2 text-body-secondary">Estado</h6>
+                            </div>
+                            <div class="col text-end">
+                                <h6 class="card-subtitle mb-2 text-body-secondary">
+                                    {% if proyecto.estado == False %}
+                                    Pendiente
+                                    {% else %}
+                                    Finalizado
+                                    {% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-7 p-0">
+                <div class="card">
+                    <div class="card-header">
+                        Tareas
+                    </div>
+                    <div class="card-body">
+                        <table class="table" id="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Fecha de Inicio</th>
+                                    <th>Fecha de Finalización</th>
+                                    <th>Estado</th>
+                                    <th>Editar</th>
+                                    <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tarea in tareas %}
+                                {% with forloop.counter as index %}
+                                <tr>
+                                    <th>{{index}}</th>
+                                    <td>{{tarea.nombre}}</td>
+                                    <td>{{tarea.fecha_ini}}</td>
+                                    <td>{{tarea.fecha_fin}}</td>
+                                    <td>
+                                        {% if tarea.estado == False %}
+                                        <span class="badge text-bg-warning">
+                                            Pendiente
+                                        </span>
+                                        {% else %}
+                                        <span class="badge text-bg-success">
+                                            Finalizada
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'tarea' tarea.id %}" class="btn btn-primary">Editar</a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'eliminarTarea' proyecto.nombre tarea.id %}"
+                                            class="btn btn-danger">Eliminar</a>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Tarea</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'add_tarea' %}" method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="hidden" name="id_proyecto" value="{{proyecto.id}}">
+                                <label for="" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="nombre_tarea">
+                                <div class="row">
+                                    <div class="col">
+                                        <label for="" class="form-label">Fecha de Inicio</label>
+                                        <input type="date" class="form-control" name="date_ini">
+                                    </div>
+                                    <div class="col">
+                                        <label for="" class="form-label">Fecha de Finalización</label>
+                                        <input type="date" class="form-control" name="date_fin">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">Agregar Tarea</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="edit_proyect">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">Editar Proyecto</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'edit' %}" method="post">
+                            <div class="mb-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="id_proyecto" value="{{proyecto.id}}">
+                                <label for="" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="nombre_proyecto"
+                                    value="{{proyecto.nombre}}">
+                                <label for="" class="form-label">Descripción</label>
+                                <textarea name="descripcion_proyecto" id="" class="form-control"
+                                    rows="3">{{proyecto.descripcion}}</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function() {
+        $("#btn_actualizarEstado").click(function() {
+            var proyectoId = {{proyecto.id}};
+            $.ajax({
+                type: "GET",
+                url: "{% url 'actualizarEstado' proyecto.id %}",
+                data: {
+                    'proyecto_id': proyectoId,
+                },
+                success: function() {
+                    location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
